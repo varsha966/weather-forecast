@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beautiful Weather App</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* 🌈 Background */
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(15px);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    /* 🔍 Search Bar */
+    .search-box {
+      display: flex;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      border-radius: 12px 0 0 12px;
+    }
+
+    .search-btn {
+      background: #ff6b6b;
+      color: #fff;
+      border: none;
+      padding: 0 16px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      border-radius: 0 12px 12px 0;
+      transition: background 0.3s;
+    }
+    .search-btn:hover {
+      background: #ff4757;
+    }
+
+    /* 🌤️ Weather Card */
+    .weather-card {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      animation: fadeIn 0.5s ease;
+    }
+
+    .weather-icon img {
+      width: 90px;
+      margin: 10px 0;
+    }
+
+    .temperature {
+      font-size: 2.5rem;
+      font-weight: bold;
+    }
+
+    .condition {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .details {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+
+    .detail {
+      text-align: center;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    .loading {
+      margin-top: 20px;
+      font-size: 1.1rem;
+    }
+
+    .error {
+      margin-top: 20px;
+      color: #ffcccc;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌍 Weather App</h1>
+
+    <!-- Search -->
+    <div class="search-box">
+      <input type="text" id="cityInput" class="search-input" placeholder="Enter city...">
+      <button id="searchBtn" class="search-btn"><i class="fas fa-search"></i></button>
+    </div>
+
+    <!-- Weather Info -->
+    <div id="weatherContainer">
+      <p class="loading">Enter a city to get weather 🌤️</p>
+    </div>
+  </div>
+
+  <script>
+    const apiKey = "58493d8ac35f4a24b0a124150253108"; // 
+    const searchBtn = document.getElementById("searchBtn");
+    const cityInput = document.getElementById("cityInput");
+    const weatherContainer = document.getElementById("weatherContainer");
+
+    async function getWeather(city) {
+      weatherContainer.innerHTML = `<p class="loading"><i class="fas fa-spinner fa-spin"></i> Fetching weather...</p>`;
+      try {
+        const res = await fetch(`https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}&aqi=no`);
+        if (!res.ok) throw new Error("City not found ❌");
+        const data = await res.json();
+        displayWeather(data);
+      } catch (error) {
+        weatherContainer.innerHTML = `<p class="error">${error.message}</p>`;
+      }
+    }
+
+    function displayWeather(data) {
+      weatherContainer.innerHTML = `
+        <div class="weather-card">
+          <h2>${data.location.name}, ${data.location.country}</h2>
+          <div class="weather-icon"><img src="https:${data.current.condition.icon}" alt="icon"></div>
+          <div class="temperature">${data.current.temp_c}°C</div>
+          <div class="condition">${data.current.condition.text}</div>
+          <div class="details">
+            <div class="detail">
+              <i class="fas fa-tint"></i><br>
+              Humidity<br>${data.current.humidity}%
+            </div>
+            <div class="detail">
+              <i class="fas fa-wind"></i><br>
+              Wind<br>${data.current.wind_kph} km/h
+            </div>
+            <div class="detail">
+              <i class="fas fa-sun"></i><br>
+              Feels Like<br>${data.current.feelslike_c}°C
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Event listeners
+    searchBtn.addEventListener("click", () => {
+      const city = cityInput.value.trim();
+      if (city) getWeather(city);
+    });
+
+    cityInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        const city = cityInput.value.trim();
+        if (city) getWeather(city);
+      }
+    });
+  </script>
+</body>
+</html>
